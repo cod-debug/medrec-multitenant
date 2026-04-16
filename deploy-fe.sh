@@ -1,6 +1,6 @@
 # build front end
 frontend_domain="medrec.gldrp.com"
-frontend_files_path="dr-simon-medrec-fe"
+frontend_files_path="pulse-cloud-fe"
 
 cd ./$frontend_files_path
 npm install

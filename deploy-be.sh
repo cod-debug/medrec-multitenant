@@ -1,8 +1,8 @@
 #!/bin/bash
 backend_domain="medrecbe.gldrp.com"
-backend_files_path="dr-simon-medrec-be"
+backend_files_path="pulse-cloud-be"
 
-# Copy regular files from dr-simon-medrec-be
+# Copy regular files from pulse-cloud-be
 echo "📁 Copying regular files from $backend_files_path..."
 cp -r ./$backend_files_path/* ./$backend_domain/
 
