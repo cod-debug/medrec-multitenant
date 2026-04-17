@@ -78,6 +78,11 @@ class UserController extends Controller
                     $secretaries = $user->secretaries()->where('level_of_authorization', 2)->get(); // get all secretaries associated with this doctor
                     $user->secretaries = $secretaries->pluck('name'); // add secretary names to the user object
                 }
+
+                if($user->level_of_authorization == 2){ // if the user is a secretary
+                    $doctors = $user->doctors()->where('level_of_authorization', 1)->get(); // get all doctors associated with this secretary
+                    $user->doctors = $doctors->pluck('name'); // add doctor names to the user object
+                }
                 return $user;
             });
 
@@ -218,6 +223,48 @@ class UserController extends Controller
             return $this->sendResponse('Secretary added successfully', ['secretary' => $secretary]);
         } catch (\Exception $e) {
             return $this->sendError('Failed to add secretary', ['error' => $e->getMessage()], 500);
+        }
+    }
+    public function removeSecretary($id): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return $this->sendError('Unauthenticated', [], 401);
+            }
+
+            $secretary = User::find($id);
+
+            if (!$secretary) {
+                return $this->sendError('User not found', [], 404);
+            }
+
+            if ($user->secretaries()->where('assistant_id', $secretary->id)->exists()) {
+                $user->secretaries()->detach($secretary->id);
+            } else {
+                return $this->sendError('This user is not your secretary', [], 400);
+            }
+
+            return $this->sendResponse('Secretary removed successfully');
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to remove secretary', ['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getDoctorsForSecretary(){
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return $this->sendError('Unauthenticated', [], 401);
+            }
+
+            $doctors = $user->doctors()->where('level_of_authorization', User::USER_ROLE_DOCTOR)->get();
+
+            return $this->sendResponse('Doctors retrieved successfully', ['doctors' => $doctors]);
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to retrieve doctors', ['error' => $e->getMessage()], 500);
         }
     }
 }

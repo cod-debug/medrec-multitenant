@@ -1,5 +1,6 @@
 import admin_routes from './admin'
 import common_routes from './common-routes'
+import secretary_routes from './secretary'
 
 const routes = [
   {
@@ -22,6 +23,13 @@ const routes = [
     children: [
       ...admin_routes,
       ...common_routes,
+    ],
+  },
+  {
+    path: '/secretary',
+    component: () => import('layouts/PublicLayout.vue'),
+    children: [
+      ...secretary_routes,
     ],
   },
 

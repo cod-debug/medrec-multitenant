@@ -2,6 +2,13 @@
     <div>
         <q-btn-dropdown icon="account_circle" color="blue-1" flat class="profile-settings" :label="full_name" no-caps>
             <q-list>
+                <q-item style="font-size: normal;"
+                    class="bg-grey-1 text-grey-10 text-center">
+                    <q-item-section>
+                        <q-item-label>{{ user_type_parsed[level_of_authorization - 1] }}</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-separator />
                 <q-item clickable v-close-popup style="font-size: small;" :to="{ name: 'profile-update' }"
                     class="bg-grey-1 text-grey-10">
                     <q-item-section>
@@ -28,6 +35,9 @@ import { useAuthStore } from 'src/stores/auth';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
+
+const level_of_authorization = computed(() => auth_store.getLevelOfAuthorization);
+const user_type_parsed = ['Doctor', 'Assistant'];
 
 const spinner = useSpinner();
 

@@ -13,12 +13,14 @@ export const useAuthStore = defineStore('useAuthStore', {
         logout_request: null,
         change_password_request: null,
         forgot_password_request: null,
+        doctor: null,
     }),
     getters: {
         isAuthenticated: (state) => !!state.token,
         getToken: (state) => state.token,
         getLevelOfAuthorization: (state) => state.level_of_authorization,
         getFullName: (state) => state.full_name,
+        getDoctor: (state) => state.doctor,
     },
     actions: {
         // Set user data (stored only in-memory in Pinia store)
@@ -26,12 +28,18 @@ export const useAuthStore = defineStore('useAuthStore', {
             this.token = data.token
             this.level_of_authorization = data.level_of_authorization
             this.full_name = data.full_name
+            this.doctor = data.doctor || null
+        },
+        // Set doctor data without affecting other fields
+        setDoctor(doctor) {
+            this.doctor = doctor
         },
         // Clear user data
         clearUserData() {
             this.token = null
             this.level_of_authorization = null
             this.full_name = null
+            this.doctor = null
         },
         // Load state from temp storage (only used during page refresh)
         initializeStore() {
@@ -41,6 +49,7 @@ export const useAuthStore = defineStore('useAuthStore', {
                 this.token = userData.token
                 this.level_of_authorization = userData.level_of_authorization
                 this.full_name = userData.full_name
+                this.doctor = userData.doctor || null
                 // Clear temp storage after loading
                 clearTempStorage()
             }

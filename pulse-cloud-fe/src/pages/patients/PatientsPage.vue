@@ -72,6 +72,7 @@ import { usePatientStore } from 'src/stores/patient';
 import { storeToRefs } from 'pinia';
 import UpdatePatientModal from 'src/components/modals/UpdatePatientModal.vue';
 import { eventBus } from 'src/utils/event-bus';
+import { useAuthStore } from 'src/stores/auth';
 
 const open_update_modal = ref(false);
 const { proxy } = getCurrentInstance();
@@ -83,6 +84,7 @@ const fetching_patients = ref(false);
 const patient_list = ref([]);
 const is_submitted = ref(false);
 const selected_patient = ref({});
+const auth_store = useAuthStore();
 
 const columns = [
     { name: 'full_name', label: 'Patient\'s name', field: 'full_name', align: 'left' },
@@ -96,6 +98,7 @@ const list_params = ref({
     page: 1,
     per_page: 10,
     keyword: '',
+    doctor_id: null,
 });
 
 function handleOpenUpdateModal(patient) {
@@ -110,6 +113,11 @@ async function getList(reset_page = false) {
         if (reset_page) {
             list_params.value.page = 1;
         }
+
+        if(auth_store.level_of_authorization === 2){
+            list_params.value.doctor_id = auth_store.doctor?.id;
+        }
+        
         await fetchAllPatients(list_params.value);
         const response = get_returning_patient_list_request.value;
         if (response?.data && response?.success) {

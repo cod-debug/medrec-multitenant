@@ -31,13 +31,21 @@ class PatientController extends Controller
     {
         //
         try {
+            $user = Auth::user();
             $per_page = $request->get('per_page', 10);
             $keyword = $request->get('keyword', '');
+            $doctor_id = $request->get('doctor_id');
+
+            if($user->level_of_authorization == 1){ // if the user is a doctor, only show their patients
+                $doctor_id = $user->id;
+            }
+
 
             $patients = Patient::when($keyword, function ($query, $keyword) {
                 $query->where('full_name', 'like', '%' . $keyword . '%')
                       ->orWhere('phone_number', 'like', '%' . $keyword . '%');
             })
+            ->where('doctor_id', $doctor_id)
             ->withCount('visits')
             ->orderBy('full_name', 'asc')
             ->paginate($per_page);
@@ -51,9 +59,16 @@ class PatientController extends Controller
 
     public function getAllPatients(Request $request): JsonResponse{
         try {
+            $user = Auth::user();
             $keyword = $request->get('keyword', '');
+            $doctor_id = $request->get('doctor_id');
+
+            if($user->level_of_authorization == 1){ // if the user is a doctor, only show their patients
+                $doctor_id = $user->id;
+            }
 
             $patients = Patient::where('full_name', 'like', '%' . $keyword . '%')
+            ->where('doctor_id', $doctor_id)
             ->orderBy('full_name', 'asc')
             ->get();
 
@@ -70,6 +85,7 @@ class PatientController extends Controller
                 'date_of_birth' => 'required|date',
                 'address' => 'required|string|max:500',
                 'phone_number' => 'required|string|max:20',
+                'doctor_id' => 'nullable|exists:users,id',
             ]);
 
             if ($validator->fails()) {
@@ -82,6 +98,7 @@ class PatientController extends Controller
                 'gender' => $request->gender,
                 'address' => $request->address,
                 'phone_number' => $request->phone_number,
+                'doctor_id' => $request->doctor_id,
                 'created_by' => Auth::id(),
             ];
             
@@ -94,7 +111,8 @@ class PatientController extends Controller
                     'status' => Visit::STATUS_QUEUED,
                     'created_by' => Auth::id(),
                     'visit_date' => now(),
-                    'visit_status' => Visit::STATUS_QUEUED
+                    'visit_status' => Visit::STATUS_QUEUED,
+                    'doctor_id' => $request->doctor_id,
                 ]);
 
                 return $this->sendResponse('Patient added and queued successfully', ['patient' => $new_patient, 'visit' => $visit]);
@@ -135,9 +153,15 @@ class PatientController extends Controller
 
     public function getPatientsToday(Request $request){
         try {
+            $user = Auth::user();
             $status = $request->get('status');
             $per_page = $request->get('per_page', 10);
             $keyword = $request->get('keyword', '');
+            $doctor_id = $request->get('doctor_id', null);
+
+            if($user->level_of_authorization == 1){ // if the user is a doctor, only show their patients
+                $doctor_id = $user->id;
+            }
 
             $queued_visits = Visit::select('visits.id as visit_id','visits.visit_status', 'patients.*')
                 ->join('patients', 'visits.patient_id', '=', 'patients.id')
@@ -159,6 +183,9 @@ class PatientController extends Controller
                     WHEN 'cancelled' THEN 5
                     ELSE 6
                 END")
+                ->when($doctor_id, function ($query, $doctor_id) {
+                    $query->where('visits.doctor_id', $doctor_id);
+                })
                 ->orderBy('visits.created_at', 'asc')
                 ->paginate($per_page);
 
@@ -172,6 +199,7 @@ class PatientController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'patient_id' => 'required|exists:patients,id',
+                'doctor_id' => 'required|exists:users,id',
             ]);
 
             if ($validator->fails()) {
@@ -180,6 +208,7 @@ class PatientController extends Controller
 
             $visit = Visit::create([
                 'patient_id' => $request->patient_id,
+                'doctor_id' => $request->doctor_id,
                 'created_by' => Auth::id(),
                 'visit_date' => now(),
                 'visit_status' => Visit::STATUS_QUEUED

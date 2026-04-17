@@ -83,6 +83,7 @@ import ConfirmationModal from '../modals/ConfirmationModal.vue';
 import { useSpinner } from 'src/composables/spinner';
 import { Notify } from 'quasar';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from 'src/stores/auth';
 
 const { proxy } = getCurrentInstance();
 const helpers = proxy.$helpers;
@@ -93,6 +94,7 @@ const fetching_patients = ref(false);
 const patient_list = ref([]);
 const spinner = useSpinner();
 const router = useRouter();
+const auth_store = useAuthStore();
 
 const columns = [
     { name: 'full_name', label: 'Patient\'s name', field: 'full_name', align: 'left' },
@@ -171,11 +173,15 @@ async function getList(is_search = false) {
             list_params.value.page = 1; // reset to first page when searching
         }
 
-        const payload = {
+        let payload = {
             keyword: list_params.value.keyword,
             page: list_params.value.page,
             per_page: list_params.value.per_page,
         };
+
+        if(auth_store.level_of_authorization === 2){ // if the user is a secretary, include doctor_id in the payload to fetch patients for that specific doctor
+            payload.doctor_id = auth_store.doctor?.id;
+        }
 
         fetching_patients.value = true;
         await fetchTodaysPatientList(payload);

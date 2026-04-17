@@ -17,6 +17,7 @@ class VisitController extends Controller
     //
     public function getVisitList(Request $request){
         try {
+            $user = Auth::user();
             $per_page = $request->get('per_page', 10);
             $keyword = $request->get('keyword', '');
             $date_start = $request->get('date_start')
@@ -27,6 +28,12 @@ class VisitController extends Controller
                 ? Carbon::parse($request->get('date_end'))->format('Y-m-d')
                 : Carbon::now()->endOfMonth()->format('Y-m-d'); // add default value end of the month
 
+            $doctor_id = $request->get('doctor_id', null);
+
+            if($user->level_of_authorization == 1){ // if the user is a secretary, filter visits by the associated doctor_id
+                $doctor_id = $user->doctor_id;
+            }
+
             $visits = Visit::with('patient')
                 ->when($keyword, function ($query, $keyword) {
                     $query->whereHas('patient', function ($q) use ($keyword) {
@@ -36,6 +43,9 @@ class VisitController extends Controller
                 })
                 ->when($date_start && $date_end, function ($query) use ($date_start, $date_end) {
                      $query->whereBetween(DB::raw('DATE(visit_date)'), [$date_start, $date_end]);
+                })
+                ->when($doctor_id, function ($query, $doctor_id) {
+                    $query->where('doctor_id', $doctor_id);
                 })
                 ->orderBy('created_at', 'desc')
                 ->paginate($per_page);
@@ -327,12 +337,20 @@ class VisitController extends Controller
         }
     }
 
-    public function getDailyRevenue(){
+    public function getDailyRevenue(Request $request){
         try {
+            $doctor_id = $request->get('doctor_id');
+            $user = Auth::user();
+
+            if($user->level_of_authorization == 1){ // if the user is a doctor, only show their patients
+                $doctor_id = $user->id;
+            }
+
             $visits = Visit::join('patients', 'visits.patient_id', '=', 'patients.id')
                 ->addSelect('patients.full_name')
                 ->where('visits.visit_status', Visit::STATUS_SETTLED)
                 ->whereDate('visits.created_at', Carbon::today())
+                ->where('visits.doctor_id', $doctor_id)
                 ->withSum('visitFees as total_fee', 'fee_amount')
                 ->orderBy('patients.full_name')
                 ->get();

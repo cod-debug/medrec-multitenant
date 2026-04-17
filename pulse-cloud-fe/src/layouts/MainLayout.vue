@@ -3,7 +3,7 @@
     <q-header elevated>
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-        <q-toolbar-title> MEDREC </q-toolbar-title>
+        <q-toolbar-title> PulseCloud </q-toolbar-title>
         <profile-dropdown />
       </q-toolbar>
     </q-header>

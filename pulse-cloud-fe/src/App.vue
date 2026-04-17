@@ -17,6 +17,7 @@ const handleBeforeUnload = () => {
       token: auth_store.token,
       level_of_authorization: auth_store.level_of_authorization,
       full_name: auth_store.full_name,
+      doctor: auth_store.doctor,
     }
     saveToTempStorage(userData)
   }

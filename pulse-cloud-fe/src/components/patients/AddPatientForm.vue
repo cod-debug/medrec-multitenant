@@ -19,12 +19,14 @@ import { Notify } from 'quasar';
 import { useSpinner } from 'src/composables/spinner';
 import { usePatientStore } from 'src/stores/patient';
 import { eventBus } from 'src/utils/event-bus';
+import { useAuthStore } from 'src/stores/auth';
 
 const spinner = useSpinner();
 
 const patient_store = usePatientStore();
 const { saveAndQueueRequest } = patient_store;
 const { add_patient_and_queue_request } = storeToRefs(patient_store);
+const auth_store = useAuthStore();
 
 const { proxy } = getCurrentInstance();
 
@@ -37,6 +39,7 @@ const form = reactive({
     date_of_birth: '',
     gender: '',
     phone_number: '',
+    doctor_id: auth_store.doctor?.id || null, // associate patient with the currently logged-in doctor, default to null if not available
 });
 
 const emit = defineEmits(['cancel', 'success']);

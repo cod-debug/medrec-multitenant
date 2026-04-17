@@ -34,6 +34,8 @@ Route::prefix('v1')->group(function () {
         Route::post('update-info', 'updateUserInfo');
         Route::get('current-user', 'getCurrentUser');
         Route::post('add-secretary', 'addSecretary');
+        Route::post('remove-secretary/{id}', 'removeSecretary');
+        Route::get('get-doctors', 'getDoctorsForSecretary');
 
         Route::controller(AuthController::class)->group(function () {
             Route::post('logout', 'logout');

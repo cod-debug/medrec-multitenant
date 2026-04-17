@@ -128,6 +128,11 @@ const handleSignIn = async () => {
         full_name,
       });
 
+      if(level_of_authorization === 2){
+        router.push({ name: 'select-doctor' });
+        return false;
+      }
+
 
       Notify.create({
         message: response.message,

@@ -94,6 +94,7 @@ import { getCurrentInstance, onMounted, ref } from 'vue';
 import { usePatientStore } from 'src/stores/patient';
 import { storeToRefs } from 'pinia';
 import DateRangePicker from 'src/components/reusables/DateRangePicker.vue';
+import { useAuthStore } from 'src/stores/auth';
 
 const { proxy } = getCurrentInstance();
 const helpers = proxy.$helpers;
@@ -102,12 +103,15 @@ const patient_store = usePatientStore();
 const { getVisitList } = patient_store;
 const { get_visit_list_request } = storeToRefs(patient_store);
 
+const auth_store = useAuthStore();
+
 const list_params = ref({
     keyword: '',
     page: 1,
     per_page: 10,
     date_start: null,
     date_end: null,
+    doctor_id: null,
 });
 
 const visit_list = ref([]);
@@ -128,6 +132,11 @@ async function getList(is_search = false) {
         if (is_search) {
             list_params.value.page = 1;
         }
+
+        if(auth_store.level_of_authorization === 2){
+            list_params.value.doctor_id = auth_store.doctor?.id;
+        }
+
         await getVisitList(list_params.value);
         const response = get_visit_list_request.value;
         if (response?.data && response?.success) {

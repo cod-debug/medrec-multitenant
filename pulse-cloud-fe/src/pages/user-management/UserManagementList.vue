@@ -33,6 +33,11 @@
                     <q-badge v-for="secretary in props.row.secretaries" :key="secretary" :label="secretary" color="secondary" class="q-mr-xs" />
                 </q-td>
             </template>
+            <template v-slot:body-cell-doctor="props">
+                <q-td :props="props">
+                    <q-badge v-for="doctor in props.row.doctors" :key="doctor" :label="doctor" color="secondary" class="q-mr-xs" />
+                </q-td>
+            </template>
             <template v-slot:body-cell-actions="props">
                 <q-td :props="props">
                     <q-btn outline color="primary" size="sm" icon="person_add_alt" @click="addAsMySecretary(props.row.id)" v-if="list_params.user_type === 2" >
@@ -92,6 +97,11 @@ const columns_map = {
         { name: 'name', label: 'Full Name', field: 'name', align: 'left' },
         { name: 'email', label: 'Email Address', field: 'email', align: 'left' },
         { name: 'username', label: 'Username', field: 'username', align: 'left' },
+        { 
+            name: 'doctor', label: 'Doctors', field: 'doctor', align: 'left', 
+            style: 'max-width: 100px; word-wrap: break-word; white-space: normal;',
+            headerStyle: 'max-width: 100px' 
+        },
         { name: 'actions', label: 'Actions', field: 'actions', align: 'left' },
     ],
 };

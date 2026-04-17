@@ -14,7 +14,8 @@ export const useUsersStore = defineStore('useUsersStore', {
         update_info_request: null,
         get_current_user_request: null,
         get_officemate_request: null,
-        add_secretary_request: null
+        add_secretary_request: null,
+        get_doctors_for_secretary_request: null,
     }),
     getters: {},
     actions: {
@@ -202,6 +203,27 @@ export const useUsersStore = defineStore('useUsersStore', {
                 this.add_secretary_request = error.response.data;
             }
         },
+        async getDoctorsForSecretary() {
+            const auth_store = useAuthStore()
+            try {
+                const { data, status } = await axios({
+                    method: 'GET',
+                    url: `${API_BASE_URL}/api/v1/user/get-doctors`,
+                    headers: {
+                        Authorization: `Bearer ${auth_store.getToken}`,
+                    },
+                })
+
+                if ([200, 201].includes(status)) {
+                    this.get_doctors_for_secretary_request = data;
+                } else {
+                    this.get_doctors_for_secretary_request = data;
+                }
+            } catch (error) {
+                this.get_doctors_for_secretary_request = error.response.data;
+            }
+        },
+        
     },
 })
 

@@ -1,8 +1,21 @@
 <template>
     <div class="q-pa-md bg-grey-3">
         <img alt="boy avatar" :src="profile_picture" style="width: 90%;" class="q-mb-md">
-        <div class="text-weight-bold">{{ full_name }}</div>
-        <div>{{ user_type_parsed[level_of_authorization - 1] }}</div>
+        <div v-if="level_of_authorization == 1" >
+            <div class="text-weight-bold">{{ full_name }}</div>
+            <div>{{ user_type_parsed[level_of_authorization - 1] }}</div>
+        </div>
+        <div v-if="level_of_authorization == 2" class="q-mt-sm">
+            <div class="text-weight-bold">Dr. {{ auth_store.doctor?.name }}</div>
+            <div>
+                <span>Doctor </span>
+                <q-btn icon="sync_alt" :to="{ name: 'select-doctor' }" flat size="sm" class="text-secondary" v-if="!auth_store.doctor?.only_one_available">
+                    <q-tooltip>
+                        Switch Doctor
+                    </q-tooltip>
+                </q-btn>
+            </div>
+        </div>
     </div>
 </template>
 <script setup>

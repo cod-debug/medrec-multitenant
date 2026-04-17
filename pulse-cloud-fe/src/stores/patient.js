@@ -274,11 +274,12 @@ export const usePatientStore = defineStore('usePatientStore', {
                 this.get_visit_list_request = error.response.data
             }
         },
-        async getDailyRevenue(){
+        async getDailyRevenue(payload){
             const auth_store = useAuthStore()
             try {
                 const { data, status } = await axios({
                     method: 'GET',
+                    params: payload,
                     url: `${API_BASE_URL}/api/v1/visit/revenue`,
                     headers: {
                         Authorization: `Bearer ${auth_store.getToken}`,

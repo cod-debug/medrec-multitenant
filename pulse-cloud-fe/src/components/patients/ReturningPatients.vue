@@ -56,10 +56,13 @@ import { storeToRefs } from 'pinia';
 import { eventBus } from 'src/utils/event-bus';
 import { Notify } from 'quasar';
 import { useSpinner } from 'src/composables/spinner';
+import { useAuthStore } from 'src/stores/auth';
 
 const { proxy } = getCurrentInstance();
 const helpers = proxy.$helpers;
 const spinner = useSpinner();
+
+const auth_store = useAuthStore();
 
 const patient_store = usePatientStore();
 const { fetchAllPatients, addPatientToQueue } = patient_store;
@@ -76,6 +79,7 @@ const list_params = ref({
     page: 1,
     per_page: 10,
     keyword: '',
+    doctor_id: null,
 });
 
 const emit = defineEmits(['cancel', 'success']);
@@ -87,6 +91,11 @@ async function getList(reset_page = false) {
         if (reset_page) {
             list_params.value.page = 1;
         }
+
+        if(auth_store.level_of_authorization === 2){
+            list_params.value.doctor_id = auth_store.doctor?.id;
+        }
+
         await fetchAllPatients(list_params.value);
         const response = get_returning_patient_list_request.value;
         if (response?.data && response?.success) {
@@ -104,7 +113,13 @@ async function getList(reset_page = false) {
 async function addToQueue(patient_id) {
     try {
         spinner.show('Adding patient to queue...');
-        await addPatientToQueue({ patient_id: patient_id });
+
+        const payload = {
+            patient_id: patient_id,
+            doctor_id: auth_store.doctor?.id || null
+        };
+
+        await addPatientToQueue(payload);
         const response = add_patient_to_queue_request.value;
         if (response?.success) {
             // Optionally, show a success message or update UI
@@ -118,7 +133,14 @@ async function addToQueue(patient_id) {
             eventBus.emit('refreshTable'); 
             handleSuccess();
         } else {
-            console.error('Failed to add patient to queue');
+            helpers.showDebugMessage(response.message);
+            Notify.create({
+                message: response.message,
+                position: 'top-right',
+                closeBtn: "X",
+                timeout: 3000,
+                color: 'red-14'
+            });
         }
     } catch (e) {
         helpers.showDebugMessage(e);

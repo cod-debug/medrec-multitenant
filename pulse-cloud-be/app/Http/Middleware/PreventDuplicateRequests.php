@@ -23,7 +23,7 @@ class PreventDuplicateRequests
 
             $key = "dedupe:{$fingerprint}";
         
-        if(!Cache::add($key, true, now()->addMinutes(1))){
+        if(!Cache::add($key, true, now()->addMinutes(0.1))){
             return response()->json(['message' => 'Duplicate request detected. Please wait before trying again.'], 429);
         }
         return $next($request);

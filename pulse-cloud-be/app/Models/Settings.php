@@ -8,6 +8,7 @@ class Settings extends Model
 {
     //
     protected $fillable = [
+        'doctor_id',
         'data',
         'updated_by',
     ];

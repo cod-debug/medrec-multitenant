@@ -38,6 +38,7 @@ import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
 import { usePatientStore } from '/src/stores/patient';
 import { storeToRefs } from 'pinia';
 import { useSpinner } from 'src/composables/spinner';
+import { useAuthStore } from 'src/stores/auth';
 
 const { proxy } = getCurrentInstance();
 const helpers = proxy.$helpers;
@@ -47,6 +48,7 @@ const { getDailyRevenue } = patientStore;
 const { get_daily_revenue_request } = storeToRefs(patientStore);
 const visits = ref([]);
 const total_revenue = ref(0);
+const auth_store = useAuthStore();
 
 const props = defineProps({
     modelValue: {
@@ -60,7 +62,11 @@ const emit = defineEmits(['update:modelValue']);
 async function loadDailyRevenue() {
     try {
         spinner.show('Fetching daily revenue...');
-        await getDailyRevenue();
+        const payload = {
+            doctor_id: auth_store.doctor?.id
+        }
+
+        await getDailyRevenue(payload);
         const response = get_daily_revenue_request.value;
         visits.value = response?.data?.visits || [];
         total_revenue.value = response?.data?.total_revenue || 0;
